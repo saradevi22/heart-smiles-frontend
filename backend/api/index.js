@@ -202,7 +202,11 @@ app.get('/favicon.png', (req, res) => {
 // Routes
 // Mount routes with /api prefix (works for both local and Vercel)
 console.log('Mounting routes...');
+console.log('Auth routes type:', typeof authRoutes);
+console.log('Auth routes:', authRoutes);
+
 try {
+  // Mount with /api prefix
   app.use('/api/auth', authRoutes);
   app.use('/api/participants', participantRoutes);
   app.use('/api/programs', programRoutes);
@@ -222,9 +226,21 @@ try {
   app.use('/export', exportRoutes);
   app.use('/import', importRoutes);
   console.log('Routes without /api prefix mounted successfully');
+  
+  // Log all registered routes for debugging
+  console.log('Registered routes:');
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      console.log(`  ${Object.keys(middleware.route.methods).join(',').toUpperCase()} ${middleware.route.path}`);
+    } else if (middleware.name === 'router') {
+      console.log(`  Router mounted at: ${middleware.regexp}`);
+    }
+  });
+  
   console.log('All routes mounted. App ready to handle requests.');
 } catch (error) {
   console.error('Error mounting routes:', error);
+  console.error('Error stack:', error.stack);
   throw error;
 }
 
