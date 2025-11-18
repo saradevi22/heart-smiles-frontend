@@ -76,6 +76,8 @@ const allowedOrigins = [
   // Vercel frontend URLs (automatically detected if using Vercel)
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
   process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : null,
+  // Deployed frontend URL
+  'https://heart-smiles-frontend-ri7gn79hh-sara-devis-projects.vercel.app',
 ].filter(Boolean); // Remove null/undefined values
 
 // Configure CORS for production and development
