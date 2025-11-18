@@ -80,6 +80,8 @@ const allowedOrigins = [
   'https://heart-smiles-frontend.vercel.app',
   // Allow any Vercel frontend subdomain (for flexibility)
   /^https:\/\/heart-smiles-frontend.*\.vercel\.app$/,
+  // Allow any vercel.app subdomain (very permissive for Vercel deployments)
+  /^https:\/\/.*\.vercel\.app$/,
 ].filter(Boolean); // Remove null/undefined values
 
 console.log('CORS allowed origins:', allowedOrigins);
@@ -88,28 +90,57 @@ console.log('CORS allowed origins:', allowedOrigins);
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
+    
+    console.log('CORS: Checking origin:', origin);
     
     // Check if origin is in allowed list
     const isAllowed = allowedOrigins.some(allowed => {
       if (typeof allowed === 'string') {
-        return allowed === origin;
+        const matches = allowed === origin;
+        if (matches) console.log('CORS: Matched string origin:', allowed);
+        return matches;
       } else if (allowed instanceof RegExp) {
-        return allowed.test(origin);
+        const matches = allowed.test(origin);
+        if (matches) console.log('CORS: Matched regex origin:', allowed.toString());
+        return matches;
       }
       return false;
     });
     
     if (isAllowed) {
+      console.log('CORS: Allowing origin:', origin);
       callback(null, true);
     } else {
-      console.warn('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+      console.warn('CORS: Blocked origin:', origin);
+      console.warn('CORS: Allowed origins:', allowedOrigins);
+      // In development, allow all origins for easier debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('CORS: Development mode - allowing origin anyway');
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  maxAge: 86400, // 24 hours - cache preflight requests
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // Body parsing middleware
