@@ -120,7 +120,33 @@ app.get('/', (req, res) => {
       export: '/api/export',
       import: '/api/import'
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    debug: {
+      path: req.path,
+      originalUrl: req.originalUrl,
+      url: req.url
+    }
+  });
+});
+
+// Test endpoint to verify routing works
+app.get('/test', (req, res) => {
+  res.status(200).json({ 
+    message: 'Test endpoint works!',
+    path: req.path,
+    originalUrl: req.originalUrl,
+    url: req.url,
+    baseUrl: req.baseUrl
+  });
+});
+
+app.get('/api/test', (req, res) => {
+  res.status(200).json({ 
+    message: 'API test endpoint works!',
+    path: req.path,
+    originalUrl: req.originalUrl,
+    url: req.url,
+    baseUrl: req.baseUrl
   });
 });
 
