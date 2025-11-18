@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Determine the base URL based on environment
 // Production (Vercel) backend URL
-const PRODUCTION_API_URL = 'https://heart-smiles-backend-deployment-ipk2dq43h-sara-devis-projects.vercel.app';
+const PRODUCTION_API_URL = 'https://heart-smiles-backend-deployment-ipk2dq43h-sara-devis-projects.vercel.app/api';
 // Local development URL
 const LOCAL_API_URL = 'http://localhost:5001/api';
 
@@ -96,77 +96,77 @@ api.interceptors.response.use(
 export default api;
 
 // Auth
-export const loginUser = (email, password) => api.post('/api/auth/login', { email, password });
+export const loginUser = (email, password) => api.post('/auth/login', { email, password });
 export const registerUser = (payload) => {
-  console.log('API: Making registration request to:', api.defaults.baseURL + '/api/auth/register');
+  console.log('API: Making registration request to:', api.defaults.baseURL + '/auth/register');
   console.log('API: Payload:', payload);
-  return api.post('/api/auth/register', payload);
+  return api.post('/auth/register', payload);
 };
 
 // Participants
-export const fetchParticipants = () => api.get('/api/participants');
-export const fetchParticipantById = (id) => api.get(`/api/participants/${id}`);
-export const createParticipant = (payload) => api.post('/api/participants', payload);
-export const updateParticipant = (id, payload) => api.put(`/api/participants/${id}`, payload);
-export const deleteParticipant = (id) => api.delete(`/api/participants/${id}`);
-export const addParticipantNote = (id, noteData) => api.post(`/api/participants/${id}/notes`, noteData);
-export const deleteParticipantNote = (id, noteId) => api.delete(`/api/participants/${id}/notes/${noteId}`);
-export const uploadImage = (formData) => api.post('/api/upload/single', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const fetchParticipants = () => api.get('/participants');
+export const fetchParticipantById = (id) => api.get(`/participants/${id}`);
+export const createParticipant = (payload) => api.post('/participants', payload);
+export const updateParticipant = (id, payload) => api.put(`/participants/${id}`, payload);
+export const deleteParticipant = (id) => api.delete(`/participants/${id}`);
+export const addParticipantNote = (id, noteData) => api.post(`/participants/${id}/notes`, noteData);
+export const deleteParticipantNote = (id, noteId) => api.delete(`/participants/${id}/notes/${noteId}`);
+export const uploadImage = (formData) => api.post('/upload/single', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const addParticipantPhoto = async (id, { type, imageData, uploadedAt, caption, activity, programName }) => {
   if (type === 'headshot') {
-    return api.put(`/api/participants/${id}/profile-photo`, { imageData });
+    return api.put(`/participants/${id}/profile-photo`, { imageData });
   } else {
-    return api.post(`/api/participants/${id}/program-photo`, { imageData, uploadedAt, caption, activity, programName });
+    return api.post(`/participants/${id}/program-photo`, { imageData, uploadedAt, caption, activity, programName });
   }
 };
-export const deleteParticipantPhoto = (id, photoId) => api.delete(`/api/participants/${id}/program-photo/${photoId}`);
+export const deleteParticipantPhoto = (id, photoId) => api.delete(`/participants/${id}/program-photo/${photoId}`);
 
 // Programs
-export const fetchPrograms = () => api.get('/api/programs');
+export const fetchPrograms = () => api.get('/programs');
 // Fetch single program by ID
-export const fetchProgramById = (id) => api.get(`/api/programs/${id}`);
+export const fetchProgramById = (id) => api.get(`/programs/${id}`);
 // Fetch single program by name
 export const fetchProgramByName = (name) =>
-  api.get(`/api/programs/name/${encodeURIComponent(name)}`);
+  api.get(`/programs/name/${encodeURIComponent(name)}`);
 // Create new program
-export const createProgram = (payload) => api.post('/api/programs', payload);
+export const createProgram = (payload) => api.post('/programs', payload);
 // Update program by ID
-export const updateProgramById = (id, payload) => api.put(`/api/programs/${id}`, payload);
+export const updateProgramById = (id, payload) => api.put(`/programs/${id}`, payload);
 // Update program by name
 export const updateProgram = (name, payload) =>
-  api.put(`/api/programs/name/${encodeURIComponent(name)}`, payload);
+  api.put(`/programs/name/${encodeURIComponent(name)}`, payload);
 // Delete program by ID
-export const deleteProgramById = (id) => api.delete(`/api/programs/${id}`);
+export const deleteProgramById = (id) => api.delete(`/programs/${id}`);
 // Delete program by name (fetches by name first, then deletes by ID)
 export const deleteProgram = async (name) => {
   // First fetch the program by name to get its ID
   const programResponse = await fetchProgramByName(name);
   const programId = programResponse.data.program.id;
   // Then delete by ID
-  return api.delete(`/api/programs/${programId}`);
+  return api.delete(`/programs/${programId}`);
 };
 // Add a participant to a program by name
 export const addParticipant = (programName, participantData) =>
-  api.post(`/api/programs/name/${encodeURIComponent(programName)}/participants`, participantData);
+  api.post(`/programs/name/${encodeURIComponent(programName)}/participants`, participantData);
 // Remove a participant from a program by name
 export const removeParticipant = (programName, participantId) =>
-  api.delete(`/api/programs/name/${encodeURIComponent(programName)}/participants/${participantId}`);
+  api.delete(`/programs/name/${encodeURIComponent(programName)}/participants/${participantId}`);
 // Remove participant from program (for participant edit)
 export const removeParticipantFromProgram = (participantId, programId) =>
-  api.delete(`/api/participants/${participantId}/programs/${programId}`);
+  api.delete(`/participants/${participantId}/programs/${programId}`);
 // Add participant to program (for participant edit)
 export const addParticipantToProgram = (participantId, programId) =>
-  api.post(`/api/participants/${participantId}/programs/${programId}`);
+  api.post(`/participants/${participantId}/programs/${programId}`);
 
 // Staff
-export const fetchStaff = () => api.get('/api/staff');
-export const deleteStaff = (id) => api.delete(`/api/staff/${id}`);
+export const fetchStaff = () => api.get('/staff');
+export const deleteStaff = (id) => api.delete(`/staff/${id}`);
 
 // Import/Export
-export const exportParticipantsCsv = () => api.get('/api/export/participants', { responseType: 'blob' });
+export const exportParticipantsCsv = () => api.get('/export/participants', { responseType: 'blob' });
 export const importParticipantsFile = (file, dryRun = true) => {
   const form = new FormData();
   form.append('file', file);
   form.append('dryRun', String(dryRun));
-  return api.post('/api/import/participants', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  return api.post('/import/participants', form, { headers: { 'Content-Type': 'multipart/form-data' } });
 };
