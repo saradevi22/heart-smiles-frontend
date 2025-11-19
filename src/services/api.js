@@ -2,12 +2,13 @@ import axios from 'axios';
 
 // Determine the base URL based on environment
 // Production (Vercel) backend URL
-const PRODUCTION_API_URL = 'https://heart-smiles-backend-deployment-ipk2dq43h-sara-devis-projects.vercel.app/api';
+// Note: Vercel deployment URLs may change - update this if you see a different URL
+const PRODUCTION_API_URL = 'https://heart-smiles-backend-deployment-hqcj17uj4-sara-devis-projects.vercel.app/api';
 // Local development URL
 const LOCAL_API_URL = 'http://localhost:5001/api';
 
-// Helper function to normalize URL (remove duplicate https://, remove trailing slashes)
-const normalizeURL = (url) => {
+// Helper function to normalize URL (remove duplicate https://, ensure /api suffix for production)
+const normalizeURL = (url, isProduction = false) => {
   if (!url) return url;
   // Remove duplicate https://
   let normalized = url.replace(/https?:\/\/https?:\/\//g, 'https://');
@@ -17,16 +18,27 @@ const normalizeURL = (url) => {
   }
   // Remove trailing slash
   normalized = normalized.replace(/\/$/, '');
+  // For production Vercel URLs, ensure /api suffix is present
+  if (isProduction && normalized.includes('vercel.app') && !normalized.endsWith('/api')) {
+    normalized = normalized + '/api';
+  }
   return normalized;
 };
 
 // Use environment variable if set, otherwise use production URL in production, localhost in development
 const envURL = process.env.REACT_APP_API_BASE_URL;
-const baseURL = envURL ? normalizeURL(envURL) : 
-  (process.env.NODE_ENV === 'production' ? PRODUCTION_API_URL : LOCAL_API_URL);
+const isProduction = process.env.NODE_ENV === 'production';
+const baseURL = envURL ? normalizeURL(envURL, isProduction) : 
+  (isProduction ? PRODUCTION_API_URL : LOCAL_API_URL);
 
-console.log('API Base URL configured as:', baseURL);
+console.log('=== API CONFIGURATION ===');
 console.log('Environment:', process.env.NODE_ENV);
+console.log('Is Production:', isProduction);
+console.log('Env URL:', envURL);
+console.log('Production URL:', PRODUCTION_API_URL);
+console.log('Local URL:', LOCAL_API_URL);
+console.log('Final Base URL:', baseURL);
+console.log('=========================');
 
 const api = axios.create({
   baseURL: baseURL,
@@ -50,19 +62,35 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('API Error:', error.response?.status, error.response?.data);
-    console.error('API Error Code:', error.code);
-    console.error('API Error Message:', error.message);
-    console.error('API Request URL:', error.config?.baseURL, error.config?.url);
+    const fullURL = error.config ? `${error.config.baseURL || ''}${error.config.url || ''}` : 'unknown';
+    
+    console.error('=== API ERROR DETAILS ===');
+    console.error('Error Code:', error.code);
+    console.error('Error Message:', error.message);
+    console.error('Full URL:', fullURL);
+    console.error('Base URL:', error.config?.baseURL);
+    console.error('Request URL:', error.config?.url);
+    console.error('Request Method:', error.config?.method);
+    console.error('Request Headers:', error.config?.headers);
+    console.error('Has Response:', !!error.response);
+    console.error('Response Status:', error.response?.status);
+    console.error('Response Data:', error.response?.data);
+    console.error('========================');
     
     // Log network errors specifically
     if (!error.response) {
       console.error('Network Error - No response from server');
-      console.error('Error details:', {
-        code: error.code,
-        message: error.message,
-        config: error.config
-      });
+      console.error('This usually means:');
+      console.error('1. The server is unreachable (wrong URL, server down)');
+      console.error('2. CORS preflight failed (OPTIONS request blocked)');
+      console.error('3. Network connectivity issue');
+      console.error('4. Request was blocked by browser/extension');
+      console.error('');
+      console.error('Troubleshooting:');
+      console.error('- Check if the backend URL is correct:', error.config?.baseURL);
+      console.error('- Try accessing the backend directly in browser:', fullURL);
+      console.error('- Check browser console for CORS errors');
+      console.error('- Verify backend is deployed and running');
     }
     
     // Handle authentication errors (401)
